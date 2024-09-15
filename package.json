@@ -1,0 +1,18 @@
+{
+  "name": "chat_frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "next": "14.2.10",
+    "react": "^18",
+    "react-dom": "^18",
+    "sockjs-client": "^1.6.1"
+  }
+}
