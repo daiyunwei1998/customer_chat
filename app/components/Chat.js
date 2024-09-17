@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
+const chatServiceHost = process.env.CHAT_SERVICE_HOST || 'http://localhost:8080';
+
+
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
@@ -14,7 +17,7 @@ const Chat = () => {
 
   useEffect(() => {
     // Pass the userId as a query parameter for the handshake handler
-    const socketUrl = `http://localhost:8080/ws?user=${userId}`;
+    const socketUrl = chatServiceHost + `ws?user=${userId}`;
     const socket = new SockJS(socketUrl);
 
     const client = new Client({
