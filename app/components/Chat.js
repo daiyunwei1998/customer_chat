@@ -16,7 +16,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (tenantId && userId) {
-      const socketUrl = chatServiceHost + `ws?user=${userId}`;
+      const socketUrl = chatServiceHost + `/ws?user=${userId}`;
       const socket = new SockJS(socketUrl);
 
       const client = new Client({
