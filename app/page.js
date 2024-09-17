@@ -6,7 +6,10 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Chat></Chat>
+        <div style={{width:"500px"}}>
+          <Chat></Chat> 
+        </div>
+        
       </main>
       <footer className={styles.footer}>
       </footer>

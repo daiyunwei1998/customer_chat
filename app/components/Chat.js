@@ -1,17 +1,24 @@
-"use client";
-
+"use client"
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-
-const chatServiceHost = "http://203.204.185.67:8080";
+import {
+  MainContainer,
+  ChatContainer,
+  MessageList,
+  Message,
+  MessageInput,
+  Avatar
+} from "@chatscope/chat-ui-kit-react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import { chatServiceHost } from '@/app/config';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
-  const [tenantId, setTenantId] = useState(""); // State for tenantId
-  const [userId, setUserId] = useState(""); // State for userId
-  const [isConnected, setIsConnected] = useState(false); // State for WebSocket connection status
+  const [tenantId, setTenantId] = useState("");
+  const [userId, setUserId] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef(null);
 
   const onMessageReceived = (payload) => {
@@ -31,19 +38,13 @@ const Chat = () => {
         user_type: "customer",
       };
 
-      // Add the message to the chat immediately
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        chatMessage, // Display own message instantly
-      ]);
+      setMessages((prevMessages) => [...prevMessages, chatMessage]);
 
-      // Publish the message to the server
       clientRef.current.publish({
         destination: "/app/chat.sendMessage",
         body: JSON.stringify(chatMessage),
       });
 
-      // Clear the input field after sending the message
       setMessageInput("");
     }
   };
@@ -58,10 +59,8 @@ const Chat = () => {
       onConnect: () => {
         console.log("Connected");
 
-        // Subscribe to user-specific messages
         client.subscribe("/user/queue/messages", onMessageReceived);
 
-        // Notify server that customer has joined
         client.publish({
           destination: "/app/chat.addUser",
           body: JSON.stringify({
@@ -72,7 +71,7 @@ const Chat = () => {
           }),
         });
 
-        setIsConnected(true); // Mark as connected
+        setIsConnected(true);
       },
       onStompError: (frame) => {
         console.error("Broker reported error: " + frame.headers["message"]);
@@ -88,73 +87,70 @@ const Chat = () => {
   };
 
   return (
-    <div>
-      <h2>Customer Chat</h2>
-
-      {/* Tenant ID and User ID input before connecting */}
-      {!isConnected && (
-        <div>
-          <input
-            type="text"
-            placeholder="Enter Tenant ID"
-            value={tenantId}
-            onChange={(e) => setTenantId(e.target.value)}
-            style={{ marginRight: "10px" }}
-          />
-          <input
-            type="text"
-            placeholder="Enter User ID"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            style={{ marginRight: "10px" }}
-          />
-          <button
-            onClick={() => {
-              if (tenantId && userId) {
-                connect();
-              } else {
-                alert("Please enter both Tenant ID and User ID");
-              }
-            }}
-          >
-            Connect
-          </button>
-        </div>
-      )}
-
-      {/* Chat window only shows after connection */}
-      {isConnected && (
-        <div>
-          <div
-            style={{
-              border: "1px solid #ccc",
-              height: "300px",
-              overflowY: "scroll",
-              padding: "10px",
-            }}
-          >
-            {messages.map((msg, idx) => (
-              <div key={idx} style={{ marginBottom: "10px" }}>
-                <strong>{msg.sender}: </strong>
-                <span>{msg.content}</span>
-              </div>
-            ))}
+    <div style={{ height: "500px", width:"100%"}}>
+      <MainContainer>
+        {!isConnected ? (
+          <div style={{ padding: "20px" }}>
+            <h2>Customer Chat</h2>
+            <input
+              type="text"
+              placeholder="Enter Tenant ID"
+              value={tenantId}
+              onChange={(e) => setTenantId(e.target.value)}
+              style={{ marginRight: "10px", marginBottom: "10px", padding: "5px" }}
+            />
+            <input
+              type="text"
+              placeholder="Enter User ID"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              style={{ marginRight: "10px", marginBottom: "10px", padding: "5px" }}
+            />
+            <button
+              onClick={() => {
+                if (tenantId && userId) {
+                  connect();
+                } else {
+                  alert("Please enter both Tenant ID and User ID");
+                }
+              }}
+              style={{ padding: "5px 10px" }}
+            >
+              Connect
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Type your message..."
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") sendMessage();
-            }}
-            style={{ width: "80%", padding: "10px" }}
-          />
-          <button onClick={sendMessage} style={{ padding: "10px" }}>
-            Send
-          </button>
-        </div>
-      )}
+        ) : (
+          <ChatContainer>
+            <MessageList>
+              {messages.map((msg, idx) => (
+                <Message
+                  key={idx}
+                  model={{
+                    message: msg.content,
+                    sentTime: "just now",
+                    sender: msg.sender,
+                    direction: msg.sender === userId ? "outgoing" : "incoming",
+                    position: "normal"
+                  }}>
+                  <Message.Header sender={msg.sender} />
+                      <Avatar
+                        src={msg.sender === userId ? "/user.png" : "/agent.png"}
+                        name={msg.sender}
+                      />
+                  </Message>
+              ))}
+              
+            </MessageList>
+            <MessageInput
+              placeholder="Type your message here"
+              value={messageInput}
+              onChange={(val) => setMessageInput(val)}
+              onSend={sendMessage}
+              attachButton={false}
+            />
+          </ChatContainer>
+        )}
+      </MainContainer>
     </div>
   );
 };
