@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
-const chatServiceHost = process.env.CHAT_SERVICE_HOST || 'http://localhost:8080';
+const chatServiceHost = "http://203.204.185.67:8080";
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
