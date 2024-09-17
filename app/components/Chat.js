@@ -27,7 +27,7 @@ const Chat = () => {
         content: messageInput,
         type: "CHAT",
         tenant_id: tenantId,
-        receiver: "agent1", // Specify the agent's ID
+        receiver: null, // TODO check paired
         user_type: "customer",
       };
 
