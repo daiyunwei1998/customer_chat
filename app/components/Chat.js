@@ -14,53 +14,6 @@ const Chat = () => {
   const [isConnected, setIsConnected] = useState(false); // State for WebSocket connection status
   const clientRef = useRef(null);
 
-  useEffect(() => {
-    if (tenantId && userId) {
-      const socketUrl = chatServiceHost + `/ws?user=${userId}`;
-      const socket = new SockJS(socketUrl);
-
-      const client = new Client({
-        webSocketFactory: () => socket,
-        reconnectDelay: 5000,
-        onConnect: () => {
-          console.log("Connected");
-
-          // Subscribe to user-specific messages
-          client.subscribe("/user/queue/messages", onMessageReceived);
-
-          // Notify server that customer has joined
-          client.publish({
-            destination: "/app/chat.addUser",
-            body: JSON.stringify({
-              sender: userId,
-              type: "JOIN",
-              tenant_id: tenantId,
-              user_type: "customer",
-            }),
-          });
-
-          setIsConnected(true); // Mark as connected
-        },
-        onStompError: (frame) => {
-          console.error("Broker reported error: " + frame.headers["message"]);
-          console.error("Additional details: " + frame.body);
-        },
-        debug: (str) => {
-          console.log(str);
-        },
-      });
-
-      client.activate();
-      clientRef.current = client;
-
-      return () => {
-        if (clientRef.current) {
-          clientRef.current.deactivate();
-        }
-      };
-    }
-  }, [tenantId, userId]);
-
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
@@ -95,6 +48,45 @@ const Chat = () => {
     }
   };
 
+  const connect = () => {
+    const socketUrl = chatServiceHost + `/ws?user=${userId}`;
+    const socket = new SockJS(socketUrl);
+
+    const client = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        console.log("Connected");
+
+        // Subscribe to user-specific messages
+        client.subscribe("/user/queue/messages", onMessageReceived);
+
+        // Notify server that customer has joined
+        client.publish({
+          destination: "/app/chat.addUser",
+          body: JSON.stringify({
+            sender: userId,
+            type: "JOIN",
+            tenant_id: tenantId,
+            user_type: "customer",
+          }),
+        });
+
+        setIsConnected(true); // Mark as connected
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      },
+      debug: (str) => {
+        console.log(str);
+      },
+    });
+
+    client.activate();
+    clientRef.current = client;
+  };
+
   return (
     <div>
       <h2>Customer Chat</h2>
@@ -119,7 +111,7 @@ const Chat = () => {
           <button
             onClick={() => {
               if (tenantId && userId) {
-                setIsConnected(true);
+                connect();
               } else {
                 alert("Please enter both Tenant ID and User ID");
               }
