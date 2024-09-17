@@ -6,56 +6,59 @@ import { Client } from "@stomp/stompjs";
 
 const chatServiceHost = process.env.CHAT_SERVICE_HOST || 'http://localhost:8080';
 
-
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
+  const [tenantId, setTenantId] = useState(""); // State for tenantId
+  const [userId, setUserId] = useState(""); // State for userId
+  const [isConnected, setIsConnected] = useState(false); // State for WebSocket connection status
   const clientRef = useRef(null);
 
-  const tenantId = "tenant1";
-  const userId = "customer1"; // Ensure this is unique per customer
-
   useEffect(() => {
-    // Pass the userId as a query parameter for the handshake handler
-    const socketUrl = chatServiceHost + `ws?user=${userId}`;
-    const socket = new SockJS(socketUrl);
+    if (tenantId && userId) {
+      const socketUrl = chatServiceHost + `ws?user=${userId}`;
+      const socket = new SockJS(socketUrl);
 
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log("Connected");
-        // Subscribe to user-specific messages
-        client.subscribe("/user/queue/messages", onMessageReceived);
+      const client = new Client({
+        webSocketFactory: () => socket,
+        reconnectDelay: 5000,
+        onConnect: () => {
+          console.log("Connected");
 
-        // Notify server that customer has joined
-        client.publish({
-          destination: "/app/chat.addUser",
-          body: JSON.stringify({
-            sender: userId,
-            type: "JOIN",
-            tenant_id: tenantId,
-            user_type: "customer",
-          }),
-        });
-      },
-      onStompError: (frame) => {
-        console.error("Broker reported error: " + frame.headers["message"]);
-        console.error("Additional details: " + frame.body);
-      },
-      debug: (str) => {
-        console.log(str);
-      },
-    });
+          // Subscribe to user-specific messages
+          client.subscribe("/user/queue/messages", onMessageReceived);
 
-    client.activate();
-    clientRef.current = client;
+          // Notify server that customer has joined
+          client.publish({
+            destination: "/app/chat.addUser",
+            body: JSON.stringify({
+              sender: userId,
+              type: "JOIN",
+              tenant_id: tenantId,
+              user_type: "customer",
+            }),
+          });
 
-    return () => {
-      if (clientRef.current) {
-        clientRef.current.deactivate();
-      }
-    };
+          setIsConnected(true); // Mark as connected
+        },
+        onStompError: (frame) => {
+          console.error("Broker reported error: " + frame.headers["message"]);
+          console.error("Additional details: " + frame.body);
+        },
+        debug: (str) => {
+          console.log(str);
+        },
+      });
+
+      client.activate();
+      clientRef.current = client;
+
+      return () => {
+        if (clientRef.current) {
+          clientRef.current.deactivate();
+        }
+      };
+    }
   }, [tenantId, userId]);
 
   const onMessageReceived = (payload) => {
@@ -95,34 +98,71 @@ const Chat = () => {
   return (
     <div>
       <h2>Customer Chat</h2>
-      <div
-        style={{
-          border: "1px solid #ccc",
-          height: "300px",
-          overflowY: "scroll",
-          padding: "10px",
-        }}
-      >
-        {messages.map((msg, idx) => (
-          <div key={idx} style={{ marginBottom: "10px" }}>
-            <strong>{msg.sender}: </strong>
-            <span>{msg.content}</span>
+
+      {/* Tenant ID and User ID input before connecting */}
+      {!isConnected && (
+        <div>
+          <input
+            type="text"
+            placeholder="Enter Tenant ID"
+            value={tenantId}
+            onChange={(e) => setTenantId(e.target.value)}
+            style={{ marginRight: "10px" }}
+          />
+          <input
+            type="text"
+            placeholder="Enter User ID"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            style={{ marginRight: "10px" }}
+          />
+          <button
+            onClick={() => {
+              if (tenantId && userId) {
+                setIsConnected(true);
+              } else {
+                alert("Please enter both Tenant ID and User ID");
+              }
+            }}
+          >
+            Connect
+          </button>
+        </div>
+      )}
+
+      {/* Chat window only shows after connection */}
+      {isConnected && (
+        <div>
+          <div
+            style={{
+              border: "1px solid #ccc",
+              height: "300px",
+              overflowY: "scroll",
+              padding: "10px",
+            }}
+          >
+            {messages.map((msg, idx) => (
+              <div key={idx} style={{ marginBottom: "10px" }}>
+                <strong>{msg.sender}: </strong>
+                <span>{msg.content}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <input
-        type="text"
-        placeholder="Type your message..."
-        value={messageInput}
-        onChange={(e) => setMessageInput(e.target.value)}
-        onKeyPress={(e) => {
-          if (e.key === "Enter") sendMessage();
-        }}
-        style={{ width: "80%", padding: "10px" }}
-      />
-      <button onClick={sendMessage} style={{ padding: "10px" }}>
-        Send
-      </button>
+          <input
+            type="text"
+            placeholder="Type your message..."
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") sendMessage();
+            }}
+            style={{ width: "80%", padding: "10px" }}
+          />
+          <button onClick={sendMessage} style={{ padding: "10px" }}>
+            Send
+          </button>
+        </div>
+      )}
     </div>
   );
 };
