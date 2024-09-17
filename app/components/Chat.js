@@ -31,8 +31,8 @@ const Chat = () => {
           body: JSON.stringify({
             sender: userId,
             type: "JOIN",
-            tenantId: tenantId,
-            userType: "customer",
+            tenant_id: tenantId,
+            user_type: "customer",
           }),
         });
       },
@@ -67,9 +67,9 @@ const Chat = () => {
         sender: userId,
         content: messageInput,
         type: "CHAT",
-        tenantId: tenantId,
+        tenant_id: tenantId,
         receiver: "agent1", // Specify the agent's ID
-        userType: "customer",
+        user_type: "customer",
       };
 
       // Add the message to the chat immediately
