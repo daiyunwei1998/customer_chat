@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
@@ -8,14 +8,15 @@ import {
   MessageList,
   Message,
   MessageInput,
-  Avatar
+  Avatar,
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { chatServiceHost } from '@/app/config';
+import { chatServiceHost, tenantServiceHost } from "@/app/config";
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
+  const [tenantAlias, setTenantAlias] = useState(""); // Changed from tenantId to alias
   const [tenantId, setTenantId] = useState("");
   const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
@@ -46,6 +47,21 @@ const Chat = () => {
       });
 
       setMessageInput("");
+    }
+  };
+
+  const fetchTenantId = async (alias) => {
+    try {
+      const response = await fetch(`${tenantServiceHost}/api/v1/tenants/find?alias=${alias}`);
+      const data = await response.json();
+      if (data && data.data) {
+        setTenantId(data.data.tenant_id);
+      } else {
+        alert("Tenant not found");
+      }
+    } catch (error) {
+      console.error("Failed to fetch tenant ID:", error);
+      alert("Failed to fetch tenant ID. Please try again.");
     }
   };
 
@@ -86,34 +102,48 @@ const Chat = () => {
     clientRef.current = client;
   };
 
+  const handleConnectClick = async () => {
+    if (!tenantAlias || !userId) {
+      alert("Please enter both Tenant Alias and User ID");
+      return;
+    }
+
+    await fetchTenantId(tenantAlias); // Fetch tenant ID by alias before connecting
+    if (tenantId) {
+      connect();
+    }
+  };
+
   return (
-    <div style={{ height: "500px", width:"100%"}}>
+    <div style={{ height: "500px", width: "100%" }}>
       <MainContainer>
         {!isConnected ? (
           <div style={{ padding: "20px" }}>
             <h2>Customer Chat</h2>
             <input
               type="text"
-              placeholder="Enter Tenant ID"
-              value={tenantId}
-              onChange={(e) => setTenantId(e.target.value)}
-              style={{ marginRight: "10px", marginBottom: "10px", padding: "5px" }}
+              placeholder="Enter Tenant Alias"
+              value={tenantAlias}
+              onChange={(e) => setTenantAlias(e.target.value)}
+              style={{
+                marginRight: "10px",
+                marginBottom: "10px",
+                padding: "5px",
+              }}
             />
             <input
               type="text"
               placeholder="Enter User ID"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              style={{ marginRight: "10px", marginBottom: "10px", padding: "5px" }}
+              style={{
+                marginRight: "10px",
+                marginBottom: "10px",
+                padding: "5px",
+              }}
             />
             <button
-              onClick={() => {
-                if (tenantId && userId) {
-                  connect();
-                } else {
-                  alert("Please enter both Tenant ID and User ID");
-                }
-              }}
+              onClick={handleConnectClick}
               style={{ padding: "5px 10px" }}
             >
               Connect
@@ -130,16 +160,16 @@ const Chat = () => {
                     sentTime: "just now",
                     sender: msg.sender,
                     direction: msg.sender === userId ? "outgoing" : "incoming",
-                    position: "normal"
-                  }}>
+                    position: "normal",
+                  }}
+                >
                   <Message.Header sender={msg.sender} />
-                      <Avatar
-                        src={msg.sender === userId ? "/user.png" : "/agent.png"}
-                        name={msg.sender}
-                      />
-                  </Message>
+                  <Avatar
+                    src={msg.sender === userId ? "/user.png" : "/agent.png"}
+                    name={msg.sender}
+                  />
+                </Message>
               ))}
-              
             </MessageList>
             <MessageInput
               placeholder="Type your message here"
