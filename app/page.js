@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <div>
+        <div style={{width:"500px"}}>
           <Chat></Chat> 
         </div>
         

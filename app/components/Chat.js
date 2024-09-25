@@ -21,7 +21,7 @@ const Chat = () => {
   const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef(null);
-
+  
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
@@ -157,7 +157,7 @@ const Chat = () => {
                   key={idx}
                   model={{
                     message: msg.content,
-                    sentTime: "just now",
+                    sentTime: msg.timestamp || "just now",
                     sender: msg.sender,
                     direction: msg.sender === userId ? "outgoing" : "incoming",
                     position: "normal",
