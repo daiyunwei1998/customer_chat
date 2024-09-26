@@ -27,7 +27,9 @@ const Chat = () => {
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
-    message.type == "CHAT" ? setMessages((prevMessages) => [...prevMessages, message]);
+    if (message.type === "CHAT") {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    }
     setIsReplying(message.type == "ACKNOWLEDGEMENT") // set back to false if type is 'CHAT'
   };
 
