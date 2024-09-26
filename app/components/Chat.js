@@ -16,16 +16,18 @@ import { chatServiceHost, tenantServiceHost } from "@/app/config";
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
-  const [tenantAlias, setTenantAlias] = useState(""); // Changed from tenantId to alias
+  const [tenantAlias, setTenantAlias] = useState(""); 
   const [tenantId, setTenantId] = useState("");
   const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   const clientRef = useRef(null);
   
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
     setMessages((prevMessages) => [...prevMessages, message]);
+    setIsReplying(message.type == "ACKNOWLEDGEMENT") // set back to false if type is 'CHAT'
   };
 
   const sendMessage = () => {
@@ -152,6 +154,7 @@ const Chat = () => {
         ) : (
           <ChatContainer>
             <MessageList>
+            typingIndicator={isReplying ? <TypingIndicator content="AI agent is responding" /> : null}
               {messages.map((msg, idx) => (
                 <Message
                   key={idx}
