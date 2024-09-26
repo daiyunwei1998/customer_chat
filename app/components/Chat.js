@@ -1,7 +1,7 @@
-"use client";
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import ReactMarkdown from 'react-markdown';
 import {
   MainContainer,
   ChatContainer,
@@ -176,6 +176,9 @@ const Chat = () => {
                   }}
                 >
                   <Message.Header sender={msg.sender} />
+                  <Message.CustomContent>
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </Message.CustomContent>
                   <Message.Footer>
                     <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
                   </Message.Footer>
