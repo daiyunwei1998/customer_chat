@@ -42,6 +42,7 @@ const Chat = () => {
         tenant_id: tenantId,
         receiver: null, // TODO check paired
         user_type: "customer",
+        timestamp: new Date().toISOString(),
       };
 
       setMessages((prevMessages) => [...prevMessages, chatMessage]);
@@ -119,6 +120,11 @@ const Chat = () => {
     }
   };
 
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div style={{ height: "500px", width: "100%" }}>
       <MainContainer>
@@ -163,7 +169,7 @@ const Chat = () => {
                   key={idx}
                   model={{
                     message: msg.content,
-                    sentTime: msg.timestamp || "just now",
+                    sentTime: formatTimestamp(msg.timestamp) || "just now",
                     sender: msg.sender,
                     direction: msg.sender === userId ? "outgoing" : "incoming",
                     position: "normal",
