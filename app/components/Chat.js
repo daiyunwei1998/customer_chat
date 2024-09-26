@@ -9,6 +9,7 @@ import {
   Message,
   MessageInput,
   Avatar,
+  TypingIndicator
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { chatServiceHost, tenantServiceHost } from "@/app/config";
