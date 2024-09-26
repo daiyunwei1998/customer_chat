@@ -176,6 +176,9 @@ const Chat = () => {
                   }}
                 >
                   <Message.Header sender={msg.sender} />
+                  <Message.Footer>
+                    <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
+                  </Message.Footer>
                   <Avatar
                     src={msg.sender === userId ? "/user.png" : "/agent.png"}
                     name={msg.sender}
