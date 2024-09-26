@@ -13,7 +13,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # or your preferred Node.js version
+          node-version: '18'
       - name: Install dependencies
         run: npm ci
       - name: Build Next.js app
@@ -41,10 +41,18 @@ jobs:
           scp -o StrictHostKeyChecking=no -i private_key.pem -r .next package.json package-lock.json ecosystem.config.js matcha@${{ secrets.SSH_HOST }}:~/customer_chat
           ssh -o StrictHostKeyChecking=no -i private_key.pem matcha@${{ secrets.SSH_HOST }} << 'EOF'
             set -x
+            # Update Node.js
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            # Verify Node.js version
+            node -v
+            # Install PM2 globally
+            sudo npm install -g pm2
             cd ~/customer_chat
             npm ci --only=production
             pm2 delete customer-chat || true
             pm2 start ecosystem.config.js
             pm2 save
-            pm2 startup | tail -n 1 | sh
+            sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u matcha --hp /home/matcha
+            pm2 save
           EOF
