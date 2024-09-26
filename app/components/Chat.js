@@ -27,7 +27,7 @@ const Chat = () => {
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
-    setMessages((prevMessages) => [...prevMessages, message]);
+    message.type == "CHAT" ? setMessages((prevMessages) => [...prevMessages, message]);
     setIsReplying(message.type == "ACKNOWLEDGEMENT") // set back to false if type is 'CHAT'
   };
 
@@ -155,7 +155,7 @@ const Chat = () => {
         ) : (
           <ChatContainer>
             <MessageList>
-            typingIndicator={isReplying ? <TypingIndicator content="AI agent is responding" /> : null}
+            {isReplying ? <TypingIndicator content="AI agent is responding" /> : null}
               {messages.map((msg, idx) => (
                 <Message
                   key={idx}
