@@ -2,7 +2,7 @@
 import React, { useState, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import { marked } from 'marked';
+import ReactMarkdown from 'react-markdown';
 import {
   MainContainer,
   ChatContainer,
