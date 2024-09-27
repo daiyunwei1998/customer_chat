@@ -179,7 +179,7 @@ const Chat = () => {
                 >
                   <Message.Header sender={msg.sender} />
                   <Message.CustomContent>
-                    <ReactMarkdown className={styles.markdown-content}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown className={styles['markdown-content']}>{msg.content}</ReactMarkdown>
                   </Message.CustomContent>
                   <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
                   <Avatar
