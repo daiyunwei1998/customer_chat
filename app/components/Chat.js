@@ -14,6 +14,7 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { chatServiceHost, tenantServiceHost } from "@/app/config";
+import styles from '/Chat.module.css'
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -178,7 +179,7 @@ const Chat = () => {
                 >
                   <Message.Header sender={msg.sender} />
                   <Message.CustomContent>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown className={styles.markdown-content}>{msg.content}</ReactMarkdown>
                   </Message.CustomContent>
                   <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
                   <Avatar
