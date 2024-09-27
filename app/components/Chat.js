@@ -14,7 +14,7 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { chatServiceHost, tenantServiceHost } from "@/app/config";
-import styles from '/Chat.module.css'
+import styles from './Chat.module.css'
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
