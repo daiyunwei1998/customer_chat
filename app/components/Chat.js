@@ -177,7 +177,9 @@ const Chat = () => {
                   }}
                 >
                   <Message.Header sender={msg.sender} />
-                  <Message.HtmlContent html={marked(msg.content)} />
+                  <Message.CustomContent>
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </Message.CustomContent>
                   <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
                   <Avatar
                     src={msg.sender === userId ? "/user.png" : "/agent.png"}
