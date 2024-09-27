@@ -1,8 +1,8 @@
 "use client"
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
 import {
   MainContainer,
   ChatContainer,
@@ -31,7 +31,7 @@ const Chat = () => {
     if (message.type === "CHAT") {
       setMessages((prevMessages) => [...prevMessages, message]);
     }
-    setIsReplying(message.type == "ACKNOWLEDGEMENT") // set back to false if type is 'CHAT'
+    setIsReplying(message.type === "ACKNOWLEDGEMENT");
   };
 
   const sendMessage = () => {
@@ -41,7 +41,7 @@ const Chat = () => {
         content: messageInput,
         type: "CHAT",
         tenant_id: tenantId,
-        receiver: null, // TODO check paired
+        receiver: null,
         user_type: "customer",
         timestamp: new Date().toISOString(),
       };
@@ -115,7 +115,7 @@ const Chat = () => {
       return;
     }
 
-    await fetchTenantId(tenantAlias); // Fetch tenant ID by alias before connecting
+    await fetchTenantId(tenantAlias);
     if (tenantId) {
       connect();
     }
@@ -164,7 +164,7 @@ const Chat = () => {
         ) : (
           <ChatContainer>
             <MessageList>
-            {isReplying ? <TypingIndicator content="AI agent is responding" /> : null}
+              {isReplying && <TypingIndicator content="AI agent is responding" />}
               {messages.map((msg, idx) => (
                 <Message
                   key={idx}
@@ -177,12 +177,8 @@ const Chat = () => {
                   }}
                 >
                   <Message.Header sender={msg.sender} />
-                  <Message.CustomContent>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </Message.CustomContent>
-                  <Message.Footer>
-                    <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
-                  </Message.Footer>
+                  <Message.HtmlContent html={marked(msg.content)} />
+                  <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
                   <Avatar
                     src={msg.sender === userId ? "/user.png" : "/agent.png"}
                     name={msg.sender}
@@ -191,7 +187,7 @@ const Chat = () => {
               ))}
             </MessageList>
             <MessageInput
-              placeholder="Type your message here"
+              placeholder="Type your message here (Markdown supported)"
               value={messageInput}
               onChange={(val) => setMessageInput(val)}
               onSend={sendMessage}
