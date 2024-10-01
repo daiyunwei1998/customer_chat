@@ -115,6 +115,22 @@ const Chat = ({ tenantId, userId,jwt }) => {
   };
 
   useEffect(() => {
+    const handleCopy = (e) => {
+      const text_only = document.getSelection().toString();
+      const clipdata = e.clipboardData || window.clipboardData;
+      clipdata.setData('text/plain', text_only); // Set plain text
+      clipdata.setData('text/html', text_only);  // Avoid copying HTML elements
+      e.preventDefault(); // Prevent default copy behavior
+    };
+
+    document.addEventListener('copy', handleCopy);
+
+    return () => {
+      document.removeEventListener('copy', handleCopy); // Cleanup on unmount
+    };
+  }, []);
+
+  useEffect(() => {
     if (tenantId && userId) {
       connect();
     }
