@@ -138,7 +138,7 @@ const Chat = ({ tenantId, userId,jwt }) => {
 
   return (
     <ChakraProvider>
-      <Box height="calc(100vh - 72px)" width="100%">
+      <Box height="calc(100dvh - 72px)" width="100%">
         <MainContainer style={{ height: '100%' }}>
           <ChatContainer style={{ height: '100%' }}>
             <MessageList
