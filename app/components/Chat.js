@@ -1,8 +1,9 @@
 "use client"
-import React, { useState, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import ReactMarkdown from 'react-markdown';
+import React, { useState, useEffect, useRef } from "react";
+import { ChakraProvider, Box } from "@chakra-ui/react";
 import {
   MainContainer,
   ChatContainer,
@@ -16,7 +17,7 @@ import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { chatServiceHost, tenantServiceHost } from "@/app/config";
 import styles from './Chat.module.css'
 
-const Chat = () => {
+const Chat = ({ tenantId, userId }) => {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [tenantAlias, setTenantAlias] = useState(""); 
@@ -35,11 +36,11 @@ const Chat = () => {
     setIsReplying(message.type === "ACKNOWLEDGEMENT");
   };
 
-  const sendMessage = () => {
-    if (messageInput.trim() !== "" && clientRef.current) {
+  const sendMessage = (message) => {
+    if (message.trim() !== "" && clientRef.current) {
       const chatMessage = {
         sender: userId,
-        content: messageInput,
+        content: message,
         type: "CHAT",
         tenant_id: tenantId,
         receiver: null,
@@ -53,8 +54,6 @@ const Chat = () => {
         destination: "/app/chat.sendMessage",
         body: JSON.stringify(chatMessage),
       });
-
-      setMessageInput("");
     }
   };
 
@@ -110,96 +109,46 @@ const Chat = () => {
     clientRef.current = client;
   };
 
-  const handleConnectClick = async () => {
-    if (!tenantAlias || !userId) {
-      alert("Please enter both Tenant Alias and User ID");
-      return;
-    }
-
-    await fetchTenantId(tenantAlias);
-    if (tenantId) {
+  useEffect(() => {
+    if (tenantId && userId) {
       connect();
     }
-  };
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  }, [tenantId, userId]);
 
   return (
-    <div style={{ height: "500px", width: "100%" }}>
-      <MainContainer>
-        {!isConnected ? (
-          <div style={{ padding: "20px" }}>
-            <h2>Customer Chat</h2>
-            <input
-              type="text"
-              placeholder="Enter Tenant Alias"
-              value={tenantAlias}
-              onChange={(e) => setTenantAlias(e.target.value)}
-              style={{
-                marginRight: "10px",
-                marginBottom: "10px",
-                padding: "5px",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Enter User ID"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              style={{
-                marginRight: "10px",
-                marginBottom: "10px",
-                padding: "5px",
-              }}
-            />
-            <button
-              onClick={handleConnectClick}
-              style={{ padding: "5px 10px" }}
-            >
-              Connect
-            </button>
-          </div>
-        ) : (
-          <ChatContainer>
+    <ChakraProvider>
+      <Box height="calc(100vh - 72px)" width="100%">
+        <MainContainer style={{ height: '100%' }}>
+          <ChatContainer style={{ height: '100%' }}>
             <MessageList>
-              {isReplying && <TypingIndicator content="AI agent is responding" />}
-              {messages.map((msg, idx) => (
-                <Message
-                  key={idx}
-                  model={{
-                    message: msg.content,
-                    sentTime: formatTimestamp(msg.timestamp) || "just now",
-                    sender: msg.sender,
-                    direction: msg.sender === userId ? "outgoing" : "incoming",
-                    position: "normal",
-                  }}
-                >
-                  <Message.Header sender={msg.sender} />
-                  <Message.CustomContent>
-                    <ReactMarkdown className={styles['markdown-content']}>{msg.content}</ReactMarkdown>
-                  </Message.CustomContent>
-                  <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
-                  <Avatar
-                    src={msg.sender === userId ? "/user.png" : "/agent.png"}
-                    name={msg.sender}
-                  />
-                </Message>
-              ))}
+              {!isConnected ? (
+                <Message model={{
+                  message: "Connecting to customer service...",
+                  direction: "incoming",
+                  position: "single"
+                }} />
+              ) : (
+                messages.map((msg, idx) => (
+                  <Message
+                    key={idx}
+                    model={{
+                      message: msg.content,
+                      sentTime: "just now",
+                      sender: msg.sender,
+                      direction: msg.sender === userId ? "outgoing" : "incoming",
+                      position: "normal",
+                    }}
+                  >
+                    <Avatar src={msg.sender === userId ? "/user.png" : "/agent.png"} name={msg.sender} />
+                  </Message>
+                ))
+              )}
             </MessageList>
-            <MessageInput
-              placeholder="Type your message here (Markdown supported)"
-              value={messageInput}
-              onChange={(val) => setMessageInput(val)}
-              onSend={sendMessage}
-              attachButton={false}
-            />
+            <MessageInput placeholder="Type your message here" onSend={sendMessage} attachButton={false} />
           </ChatContainer>
-        )}
-      </MainContainer>
-    </div>
+        </MainContainer>
+      </Box>
+    </ChakraProvider>
   );
 };
 
