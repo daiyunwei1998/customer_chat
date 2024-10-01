@@ -11,7 +11,7 @@ import {
   Message,
   MessageInput,
   Avatar,
-  TypingIndicator
+  TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { chatServiceHost, tenantServiceHost } from "@/app/config";
@@ -156,7 +156,7 @@ const Chat = ({ tenantId, userId,jwt }) => {
                   <Message.Header sender={msg.sender} />
                   <Message.CustomContent>
                     <div className={styles["markdown-content"]}>
-                      <ReactMarkdown>{content}</ReactMarkdown>
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   </Message.CustomContent>
                   <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
