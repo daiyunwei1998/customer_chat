@@ -72,6 +72,11 @@ const Chat = ({ tenantId, userId,jwt }) => {
     }
   };
 
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const connect = () => {
     const socketUrl = chatServiceHost + `/ws?user=${userId}`;
     const socket = new SockJS(socketUrl);
