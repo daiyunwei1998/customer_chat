@@ -142,7 +142,6 @@ const Chat = ({ tenantId, userId,jwt }) => {
         <MainContainer style={{ height: '100%' }}>
           <ChatContainer style={{ height: '100%' }}>
             <MessageList>
-              {isReplying && <TypingIndicator content="AI agent is responding" />}
               {messages.map((msg, idx) => (
                 <Message
                   key={idx}
@@ -167,6 +166,13 @@ const Chat = ({ tenantId, userId,jwt }) => {
               ))}
 
             </MessageList>
+
+            {isReplying && (
+              <div style={{ padding: '10px', borderTop: '1px solid #e0e0e0' }}>
+                <TypingIndicator content="AI agent is responding" />
+              </div>
+            )}
+            
             <MessageInput placeholder="Type your message here" onSend={sendMessage} attachButton={false} />
           </ChatContainer>
         </MainContainer>
