@@ -155,7 +155,9 @@ const Chat = ({ tenantId, userId,jwt }) => {
                 >
                   <Message.Header sender={msg.sender} />
                   <Message.CustomContent>
-                    <ReactMarkdown className={styles['markdown-content']}>{msg.content}</ReactMarkdown>
+                    <div className={styles["markdown-content"]}>
+                      <ReactMarkdown>{content}</ReactMarkdown>
+                    </div>
                   </Message.CustomContent>
                   <Message.Footer sentTime={formatTimestamp(msg.timestamp)} />
                   <Avatar
