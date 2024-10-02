@@ -117,18 +117,27 @@ const Chat = ({ tenantId, userId,jwt }) => {
   useEffect(() => {
     const handleCopy = (e) => {
       const text_only = document.getSelection().toString();
-      const clipdata = e.clipboardData || window.clipboardData;
-      clipdata.setData('text/plain', text_only); // Set plain text
-      clipdata.setData('text/html', text_only);  // Avoid copying HTML elements
-      e.preventDefault(); // Prevent default copy behavior
+  
+      // Use e.clipboardData for cross-browser support
+      if (e.clipboardData) {
+        e.clipboardData.setData('text/plain', text_only);  // Plain text
+        e.clipboardData.setData('text/html', text_only);   // Strip HTML elements
+        e.preventDefault();  // Prevent default copy behavior
+      } else if (window.clipboardData) {
+        // For older IE versions or non-standard behavior in Safari
+        window.clipboardData.setData('text', text_only);
+        e.preventDefault();
+      }
     };
-
+  
     document.addEventListener('copy', handleCopy);
-
+  
     return () => {
       document.removeEventListener('copy', handleCopy); // Cleanup on unmount
     };
   }, []);
+  
+  
 
   useEffect(() => {
     if (tenantId && userId) {
