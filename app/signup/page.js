@@ -185,7 +185,7 @@ const SignUp = () => {
         isClosable: true,
       });
 
-      router.push('/admin/bot-management');
+      router.push('/');
       router.refresh();
     } catch (error) {
       console.error("Error creating user:", error);
