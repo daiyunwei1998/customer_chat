@@ -21,8 +21,6 @@ import { useRouter } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
 import { ChakraProvider } from '@chakra-ui/react';
-// Removed unused import
-// import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [alias, setAlias] = useState('');
@@ -33,9 +31,6 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const toast = useToast();
-  // Removed useSearchParams since it's no longer needed
-  // const searchParams = useSearchParams();
-  // const tenantAlias = searchParams.get('tenantAlias');
 
   useEffect(() => {
     // Function to extract subdomain

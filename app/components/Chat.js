@@ -46,7 +46,7 @@
           receiver: null,
           user_type: "customer",
           timestamp: new Date().toISOString(),
-          sender_name: 
+          sender_name: userName
         };
 
         setMessages((prevMessages) => [...prevMessages, chatMessage]);
