@@ -96,7 +96,7 @@ export default async function RootLayout({ children }) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ChakraProvider>
-          <Navbar logo={tenantInfo.logo} name={tenantInfo.name} userId={userId} jwt={jwt} />
+          <Navbar logo={tenantInfo.logo} name={tenantInfo.name} userId={userId} initialJwt={jwt} />
           {children}
         </ChakraProvider>
       </body>
