@@ -198,9 +198,9 @@ export default function LoginPage() {
       <Flex minH={'100vh'} bg={useColorModeValue('gray.50', 'gray.800')}>
         <Container maxW={'7xl'} p={0}>
           <Stack direction={{ base: 'column', md: 'row' }} h={'100vh'}>
-            {/* Right side login form */}
+            
             <Flex flex={1} p={10} align={'center'} justify={'center'}>
-              <Stack spacing={4} w={'full'} maxW={'md'}>
+              <Stack spacing={4} w={'full'} maxW={'md'} mt={'-20vh'}>
                 <Heading fontSize={'4xl'} textAlign={'center'}>
                   登入賬戶
                 </Heading>
@@ -214,16 +214,7 @@ export default function LoginPage() {
                     註冊
                   </Link>
                 </Text>
-                <FormControl id="alias">
-                  <FormLabel>商戶代號</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder="請輸入商戶代號"
-                    value={alias}
-                    onChange={(e) => setAlias(e.target.value)}
-                    isReadOnly={!!tenantAlias} // Disable input if tenantAlias is provided
-                  />
-                </FormControl>
+  
                 <FormControl id="email">
                   <FormLabel>郵箱</FormLabel>
                   <Input
