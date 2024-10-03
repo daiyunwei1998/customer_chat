@@ -10,10 +10,8 @@ import {
   FormControl,
   FormLabel,
   Container,
-  Image,
   Divider,
   useToast,
-  HStack,
   Spinner,
   InputGroup,
   InputRightElement,
@@ -21,9 +19,8 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { ChakraProvider } from '@chakra-ui/react';
-import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
+import { chatServiceHost, tenantServiceHost } from '@/app/config';
 import { useRouter } from 'next/navigation';
-
 
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,37 +33,87 @@ const SignUp = () => {
   });
   const toast = useToast();
   const [tenantAlias, setTenantAlias] = useState(null);
+  const [tenantId, setTenantId] = useState(null);
+  const [isTenantLoading, setIsTenantLoading] = useState(true);
 
   useEffect(() => {
-    // Function to extract tenantAlias from subdomain
-    const extractTenantAlias = () => {
-      if (typeof window !== 'undefined') {
-        const hostname = window.location.hostname;
-        const parts = hostname.split('.');
-        // Adjust based on your domain structure
-        if (parts.length > 2) {
-          return parts[0];
+    const checkTenant = async () => {
+      try {
+        // Function to extract tenantAlias from subdomain
+        const extractTenantAlias = () => {
+          if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            const parts = hostname.split('.');
+            // Adjust based on your domain structure, e.g., subdomain.domain.com
+            if (parts.length > 2) {
+              return parts[0];
+            }
+            return null;
+          }
+          return null;
+        };
+
+        const alias = extractTenantAlias();
+        console.log("Derived tenantAlias:", alias);
+        setTenantAlias(alias);
+
+        if (!alias) {
+          toast({
+            title: "無效的商戶",
+            description: "找不到對應的商戶，請聯繫支援。",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+          router.push('/'); // Redirect to home or appropriate page
+          return;
         }
-        return null;
+
+        // Construct query parameters
+        const params = new URLSearchParams();
+        params.append('alias', alias);
+
+        const tenantResponse = await fetch(
+          `${tenantServiceHost}/api/v1/tenants/check?${params.toString()}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (tenantResponse.ok) {
+          const { data } = await tenantResponse.json();
+          
+          setTenantId(data.tenant_id);
+        } else {
+          const errorData = await tenantResponse.json();
+          toast({
+            title: '無法驗證商戶',
+            description: errorData.message || '請檢查網址',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+          router.push('/'); // Redirect to home or appropriate page
+        }
+      } catch (error) {
+        console.error("Error checking tenant:", error);
+        toast({
+          title: '錯誤',
+          description: '無法驗證商戶資訊，請稍後再試。',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        router.push('/'); // Redirect to home or appropriate page
+      } finally {
+        setIsTenantLoading(false);
       }
-      return null;
     };
 
-  
-    let alias = extractTenantAlias();
-    console.log("Derived tenantAlias:", alias);
-    setTenantAlias(alias);
-
-    if (!alias) {
-      toast({
-        title: "無效的商戶",
-        description: "找不到對應的商戶，請聯繫支援。",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      router.push('/'); // Redirect to home or appropriate page
-    }
+    checkTenant();
   }, [toast, router]);
 
   const handleInputChange = (e) => {
@@ -93,10 +140,18 @@ const SignUp = () => {
       return;
     }
 
-    setIsLoading(true);
+    if (!tenantId) {
+      toast({
+        title: "無效的商戶",
+        description: "商戶資訊尚未加載，請稍後再試。",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
-    // Assuming tenantId is derived from tenantAlias
-    const tenantId = tenantAlias; // Adjust this line based on your actual logic
+    setIsLoading(true);
 
     const userData = {
       name: formData.name,
@@ -148,6 +203,17 @@ const SignUp = () => {
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
 
+  if (isTenantLoading) {
+    return (
+      <ChakraProvider>
+        <Container maxW="md" py={8} centerContent>
+          <Spinner size="xl" />
+          <Text mt={4}>正在驗證商戶資訊...</Text>
+        </Container>
+      </ChakraProvider>
+    );
+  }
+
   return (
     <ChakraProvider>
       <Container maxW="md" py={8}>
@@ -162,12 +228,23 @@ const SignUp = () => {
           <VStack as="form" spacing={4} onSubmit={handleSubmitUser}>
             <FormControl isRequired>
               <FormLabel>賬戶名</FormLabel>
-              <Input name="name" value={formData.name} onChange={handleInputChange} placeholder="請輸入用戶名" />
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="請輸入用戶名"
+              />
             </FormControl>
 
             <FormControl isRequired>
               <FormLabel>郵箱</FormLabel>
-              <Input name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="請輸入電子信箱" />
+              <Input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="請輸入電子信箱"
+              />
             </FormControl>
 
             <FormControl isRequired>
@@ -186,9 +263,7 @@ const SignUp = () => {
                   </Button>
                 </InputRightElement>
               </InputGroup>
-              <Text fontSize="sm" color="gray.500" mt={1}>
-                
-              </Text>
+              {/* Optionally, you can add password strength or guidelines here */}
             </FormControl>
 
             <Button colorScheme="blue" w="full" type="submit" isLoading={isLoading}>
