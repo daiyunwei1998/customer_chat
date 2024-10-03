@@ -195,7 +195,7 @@ export default function LoginPage() {
 
   return (
     <ChakraProvider>
-      <Flex minH={'100vh'} bg={useColorModeValue('gray.50', 'gray.800')}>
+      <Flex minH={'100vh'}>
         <Container maxW={'7xl'} p={0}>
           <Stack direction={{ base: 'column', md: 'row' }} h={'100vh'}>
             
