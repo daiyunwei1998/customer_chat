@@ -47,7 +47,7 @@ const Navbar = ({ name, logo, userId, tenantId, jwt }) => {
           </Text>
         </Flex>
         <Box flex={1} textAlign="right">
-          {!jwt && (
+          {jwt && (
             <Button onClick={handleLogout} colorScheme="red" size="sm">
               Logout
             </Button>
