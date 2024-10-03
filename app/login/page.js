@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -15,37 +15,46 @@ import {
   Text,
   useColorModeValue,
   useToast,
-} from '@chakra-ui/react'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { FcGoogle } from 'react-icons/fc'
-import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config'
+} from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FcGoogle } from 'react-icons/fc';
+import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
 import { ChakraProvider } from '@chakra-ui/react';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
-  const [alias, setAlias] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const router = useRouter()
-  const toast = useToast()
+  const [alias, setAlias] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const router = useRouter();
+  const toast = useToast();
+  const searchParams = useSearchParams();
+  const tenantAlias = searchParams.get('tenantAlias');
 
   useEffect(() => {
-    // Check if there are stored credentials
-    const storedCredentials = localStorage.getItem('loginCredentials')
-    if (storedCredentials) {
-      const { alias, email } = JSON.parse(storedCredentials)
-      setAlias(alias)
-      setEmail(email)
-      setRememberMe(true)
+    // If tenantAlias is provided via search parameter, set it as alias
+    if (tenantAlias) {
+      setAlias(tenantAlias);
+
+    } else {
+      // Check if there are stored credentials
+      const storedCredentials = localStorage.getItem('loginCredentials');
+      if (storedCredentials) {
+        const { alias, email } = JSON.parse(storedCredentials);
+        setAlias(alias);
+        setEmail(email);
+        setRememberMe(true);
+      }
     }
-  }, [])
+  }, [tenantAlias]);
 
   const handleLogin = async () => {
     // Reset error state
-    setError(null)
+    setError(null);
 
     // Basic form validation
     if (!alias || !email || !password) {
@@ -54,15 +63,15 @@ export default function LoginPage() {
         status: 'error',
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const params = new URLSearchParams()
-      params.append('alias', alias)
+      const params = new URLSearchParams();
+      params.append('alias', alias);
       const tenantResponse = await fetch(
         `${tenantServiceHost}/api/v1/tenants/check?${params.toString()}`,
         {
@@ -71,26 +80,26 @@ export default function LoginPage() {
             'Content-Type': 'application/json',
           },
         }
-      )
-      let tenantId
+      );
+      let tenantId;
       if (tenantResponse.ok) {
-        const { data } = await tenantResponse.json()
-        tenantId = data.tenant_id
+        const { data } = await tenantResponse.json();
+        tenantId = data.tenant_id;
       } else {
-        const data = await tenantResponse.json()
-        setError(data.message || '無法驗證商戶')
+        const data = await tenantResponse.json();
+        setError(data.message || '無法驗證商戶');
         toast({
           title: '無法驗證商戶',
           description: data.message || '請檢查商戶別名或註冊商戶',
           status: 'error',
           duration: 3000,
           isClosable: true,
-        })
-        setLoading(false)
-        return
+        });
+        setLoading(false);
+        return;
       }
 
-      console.log('Getting tenant ID:', tenantId)
+      console.log('Getting tenant ID:', tenantId);
 
       const response = await fetch(
         `${chatServiceHost}/api/v1/tenants/${tenantId}/users/login`,
@@ -106,7 +115,7 @@ export default function LoginPage() {
             password,
           }),
         }
-      )
+      );
 
       if (response.ok) {
         // Login successful
@@ -114,9 +123,9 @@ export default function LoginPage() {
           localStorage.setItem(
             'loginCredentials',
             JSON.stringify({ alias, email })
-          )
+          );
         } else {
-          localStorage.removeItem('loginCredentials')
+          localStorage.removeItem('loginCredentials');
         }
 
         toast({
@@ -124,68 +133,71 @@ export default function LoginPage() {
           status: 'success',
           duration: 3000,
           isClosable: true,
-        })
+        });
 
-        // Redirect to domain
-        window.location.href = '/'
+        // Redirect to tenant-specific domain if tenantAlias is present
+        if (tenantAlias) {
+          window.location.href = `https://${tenantAlias}.flashresponse.net/`;
+        } else {
+          // Redirect to main domain
+          window.location.href = '/';
+        }
       } else {
         // Log the response status for debugging
-        console.log('Response Status:', response.status)
+        console.log('Response Status:', response.status);
 
-        let data = null
+        let data = null;
 
         try {
           // Attempt to parse the JSON response
-          data = await response.json()
+          data = await response.json();
         } catch (parseError) {
-          console.error('Error parsing JSON:', parseError)
+          console.error('Error parsing JSON:', parseError);
           // Set data to an empty object if JSON parsing fails
-          data = {}
+          data = {};
         }
 
         if (response.status === 403) {
-          setError(data.message || '登入失敗')
+          setError(data.message || '登入失敗');
           toast({
             title: '登入失敗',
             description: data.message || '請檢查您的登入資訊',
             status: 'error',
             duration: 3000,
             isClosable: true,
-          })
+          });
         } else {
           // Handle other error statuses
-          setError(data.message || '發生未知錯誤')
+          setError(data.message || '發生未知錯誤');
           toast({
             title: '登入失敗',
             description: data.message || '請稍後再試',
             status: 'error',
             duration: 3000,
             isClosable: true,
-          })
+          });
         }
       }
     } catch (err) {
-      console.error('Fetch error:', err)
-      setError('伺服器錯誤，請稍後再試')
+      console.error('Fetch error:', err);
+      setError('伺服器錯誤，請稍後再試');
       toast({
         title: '伺服器錯誤',
         description: '請稍後再試',
         status: 'error',
         duration: 3000,
         isClosable: true,
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <ChakraProvider>
       <Flex minH={'100vh'} bg={useColorModeValue('gray.50', 'gray.800')}>
         <Container maxW={'7xl'} p={0}>
           <Stack direction={{ base: 'column', md: 'row' }} h={'100vh'}>
-
-          
             {/* Right side login form */}
             <Flex flex={1} p={10} align={'center'} justify={'center'}>
               <Stack spacing={4} w={'full'} maxW={'md'}>
@@ -198,7 +210,7 @@ export default function LoginPage() {
                   textAlign={'center'}
                 >
                   沒有賬戶？{' '}
-                  <Link href="/signin" color={'blue.400'}>
+                  <Link href="/signup" color={'blue.400'}>
                     註冊
                   </Link>
                 </Text>
@@ -209,6 +221,7 @@ export default function LoginPage() {
                     placeholder="請輸入商戶代號"
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
+                    isReadOnly={!!tenantAlias} // Disable input if tenantAlias is provided
                   />
                 </FormControl>
                 <FormControl id="email">
@@ -241,7 +254,9 @@ export default function LoginPage() {
                     >
                       記住賬戶
                     </Checkbox>
-                    <Link color={'blue.400'}>忘記密碼?</Link>
+                    <Link color={'blue.400'} href="/forgot-password">
+                      忘記密碼?
+                    </Link>
                   </Stack>
                   <Button
                     colorScheme={'blue'}
@@ -264,6 +279,6 @@ export default function LoginPage() {
           </Stack>
         </Container>
       </Flex>
-      </ChakraProvider>
-  )
+    </ChakraProvider>
+  );
 }
