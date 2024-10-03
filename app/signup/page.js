@@ -102,7 +102,7 @@ const SignUp = () => {
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      role: "ADMIN",
+      role: "CUSTOMER",
       tenant_id: tenantId,
     };
 
