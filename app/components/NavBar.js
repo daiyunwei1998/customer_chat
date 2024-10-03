@@ -13,7 +13,6 @@ const Navbar = ({ name, logo, userId, tenantId, jwt }) => {
 
 
   const handleLogout = async () => {
-    const tenantId = cookies.tenantId
 
     try {
       const response = await fetch(`${chatServiceHost}/api/v1/tenants/${tenantId}/users/logout`, {
@@ -25,8 +24,6 @@ const Navbar = ({ name, logo, userId, tenantId, jwt }) => {
       })
 
       if (response.ok) {
-        removeCookie('jwt', { path: '/' })
-        removeCookie('tenantId', { path: '/' })
         router.push('/login')
       } else {
         console.error('Logout failed', response.statusText)
