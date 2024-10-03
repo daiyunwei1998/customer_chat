@@ -187,7 +187,7 @@ const SignUp = () => {
                 </InputRightElement>
               </InputGroup>
               <Text fontSize="sm" color="gray.500" mt={1}>
-                密碼規範（to be implemented）
+                
               </Text>
             </FormControl>
 
