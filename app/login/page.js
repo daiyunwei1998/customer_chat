@@ -57,7 +57,7 @@ export default function LoginPage() {
     setError(null);
 
     // Basic form validation
-    if (!alias || !email || !password) {
+    if (!email || !password) {
       toast({
         title: '所有欄位都是必填的',
         status: 'error',
