@@ -21,7 +21,8 @@ import { useRouter } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
 import { ChakraProvider } from '@chakra-ui/react';
-import { useSearchParams } from 'next/navigation';
+// Removed unused import
+// import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [alias, setAlias] = useState('');
@@ -32,15 +33,42 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const toast = useToast();
-  const searchParams = useSearchParams();
-  const tenantAlias = searchParams.get('tenantAlias');
+  // Removed useSearchParams since it's no longer needed
+  // const searchParams = useSearchParams();
+  // const tenantAlias = searchParams.get('tenantAlias');
 
   useEffect(() => {
-    // If tenantAlias is provided via search parameter, set it as alias
-    if (tenantAlias) {
-      setAlias(tenantAlias);
+    // Function to extract subdomain
+    const getSubdomain = () => {
+      if (typeof window === 'undefined') return null;
+      const hostname = window.location.hostname;
+      
+      // Handle localhost or cases without subdomains
+      if (
+        hostname === 'localhost' ||
+        hostname.split('.').length < 3
+      ) {
+        return null;
+      }
 
+      // Extract subdomain (assuming format subdomain.domain.com)
+      const parts = hostname.split('.');
+      // Adjust the index based on your domain structure
+      // For example, for tenant1.flashresponse.net, subdomain is parts[0]
+      return parts[0];
+    };
+
+    const tenantAliasFromSubdomain = getSubdomain();
+
+    if (tenantAliasFromSubdomain) {
+      setAlias(tenantAliasFromSubdomain);
     } else {
+      // Fallback to search parameter if needed
+      // const tenantAliasFromSearch = searchParams.get('tenantAlias');
+      // if (tenantAliasFromSearch) {
+      //   setAlias(tenantAliasFromSearch);
+      // }
+
       // Check if there are stored credentials
       const storedCredentials = localStorage.getItem('loginCredentials');
       if (storedCredentials) {
@@ -50,7 +78,7 @@ export default function LoginPage() {
         setRememberMe(true);
       }
     }
-  }, [tenantAlias]);
+  }, []); // Removed dependency on tenantAlias since it's now derived from hostname
 
   const handleLogin = async () => {
     // Reset error state
@@ -136,8 +164,8 @@ export default function LoginPage() {
         });
 
         // Redirect to tenant-specific domain if tenantAlias is present
-        if (tenantAlias) {
-          window.location.href = `https://${tenantAlias}.flashresponse.net/`;
+        if (alias) {
+          window.location.href = `https://${alias}.flashresponse.net/`;
         } else {
           // Redirect to main domain
           window.location.href = '/';
@@ -198,7 +226,6 @@ export default function LoginPage() {
       <Flex minH={'100vh'}>
         <Container maxW={'7xl'} p={0}>
           <Stack direction={{ base: 'column', md: 'row' }} h={'100vh'}>
-            
             <Flex flex={1} p={10} align={'center'} justify={'center'}>
               <Stack spacing={4} w={'full'} maxW={'md'} mt={'-20vh'}>
                 <Heading fontSize={'4xl'} textAlign={'center'}>
@@ -214,7 +241,7 @@ export default function LoginPage() {
                     註冊
                   </Link>
                 </Text>
-  
+
                 <FormControl id="email">
                   <FormLabel>郵箱</FormLabel>
                   <Input
