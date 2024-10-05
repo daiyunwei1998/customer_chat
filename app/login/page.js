@@ -224,24 +224,24 @@ export default function LoginPage() {
             <Flex flex={1} p={10} align={'center'} justify={'center'}>
               <Stack spacing={4} w={'full'} maxW={'md'} mt={'-20vh'}>
                 <Heading fontSize={'4xl'} textAlign={'center'}>
-                  登入賬戶
+                  登入帳戶
                 </Heading>
                 <Text
                   fontSize={'xl'}
                   color={'gray.600'}
                   textAlign={'center'}
                 >
-                  沒有賬戶？{' '}
+                  沒有帳戶？{' '}
                   <Link href="/signup" color={'blue.400'}>
                     註冊
                   </Link>
                 </Text>
 
                 <FormControl id="email">
-                  <FormLabel>郵箱</FormLabel>
+                  <FormLabel>信箱</FormLabel>
                   <Input
                     type="email"
-                    placeholder="請輸入郵箱"
+                    placeholder="請輸入信箱"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -265,7 +265,7 @@ export default function LoginPage() {
                       isChecked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                     >
-                      記住賬戶
+                      記住帳戶
                     </Checkbox>
                     <Link color={'blue.400'} href="/forgot-password">
                       忘記密碼?

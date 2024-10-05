@@ -219,15 +219,15 @@ const SignUp = () => {
       <Container maxW="md" py={8}>
         <VStack spacing={6} align="stretch">
           <Box textAlign="center">
-            <Heading size="xl" mb={2}>註冊賬戶</Heading>
+            <Heading size="xl" mb={2}>註冊帳戶</Heading>
             <Text fontSize="md" color="gray.600">
-              創建賬戶
+              創建帳戶
             </Text>
           </Box>
 
           <VStack as="form" spacing={4} onSubmit={handleSubmitUser}>
             <FormControl isRequired>
-              <FormLabel>賬戶名</FormLabel>
+              <FormLabel>帳戶名</FormLabel>
               <Input
                 name="name"
                 value={formData.name}
@@ -237,7 +237,7 @@ const SignUp = () => {
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>郵箱</FormLabel>
+              <FormLabel>信箱</FormLabel>
               <Input
                 name="email"
                 type="email"
@@ -267,7 +267,7 @@ const SignUp = () => {
             </FormControl>
 
             <Button colorScheme="blue" w="full" type="submit" isLoading={isLoading}>
-              {isLoading ? <Spinner size="sm" /> : "建立賬戶"}
+              {isLoading ? <Spinner size="sm" /> : "建立帳戶"}
             </Button>
           </VStack>
 
@@ -283,7 +283,7 @@ const SignUp = () => {
           </Button>
 
           <Text textAlign="center">
-            已經有賬戶了?{' '}
+            已經有帳戶了?{' '}
             <Button variant="link" colorScheme="blue" onClick={() => router.push('/login')}>
               登入
             </Button>
