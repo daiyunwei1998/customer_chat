@@ -218,79 +218,70 @@ export default function LoginPage() {
 
   return (
     <ChakraProvider>
-      <Flex minH={'100vh'}>
-        <Container maxW={'7xl'} p={0}>
-          <Stack direction={{ base: 'column', md: 'row' }} h={'100vh'}>
-            <Flex flex={1} p={10} align={'center'} justify={'center'}>
-              <Stack spacing={4} w={'full'} maxW={'md'} mt={'-20vh'}>
-                <Heading fontSize={'4xl'} textAlign={'center'}>
-                  登入帳戶
-                </Heading>
-                <Text
-                  fontSize={'xl'}
-                  color={'gray.600'}
-                  textAlign={'center'}
+      <Flex minH={'100vh'} width="100%" justify={'center'} align={'center'}>
+        <Flex width="100%" maxW={'md'} direction={'column'} align={'center'}>
+          <Stack spacing={4} width="100%" p={6} mt={-40}>
+            <Heading fontSize={'4xl'} textAlign={'center'}>
+              登入帳戶
+            </Heading>
+            <Text fontSize={'xl'} color={'gray.600'} textAlign={'center'}>
+              沒有帳戶？{' '}
+              <Link href="/signup" color={'blue.400'}>
+                註冊
+              </Link>
+            </Text>
+            <FormControl id="email">
+              <FormLabel>信箱</FormLabel>
+              <Input
+                type="email"
+                placeholder="請輸入信箱"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </FormControl>
+            <FormControl id="password">
+              <FormLabel>密碼</FormLabel>
+              <Input
+                type="password"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </FormControl>
+            <Stack spacing={6}>
+              <Stack
+                direction={{ base: 'column', sm: 'row' }}
+                align={'start'}
+                justify={'space-between'}
+              >
+                <Checkbox
+                  isChecked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 >
-                  沒有帳戶？{' '}
-                  <Link href="/signup" color={'blue.400'}>
-                    註冊
-                  </Link>
-                </Text>
-
-                <FormControl id="email">
-                  <FormLabel>信箱</FormLabel>
-                  <Input
-                    type="email"
-                    placeholder="請輸入信箱"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </FormControl>
-                <FormControl id="password">
-                  <FormLabel>密碼</FormLabel>
-                  <Input
-                    type="password"
-                    placeholder="********"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </FormControl>
-                <Stack spacing={6}>
-                  <Stack
-                    direction={{ base: 'column', sm: 'row' }}
-                    align={'start'}
-                    justify={'space-between'}
-                  >
-                    <Checkbox
-                      isChecked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    >
-                      記住帳戶
-                    </Checkbox>
-                    <Link color={'blue.400'} href="/forgot-password">
-                      忘記密碼?
-                    </Link>
-                  </Stack>
-                  <Button
-                    colorScheme={'blue'}
-                    variant={'solid'}
-                    isLoading={loading}
-                    onClick={handleLogin}
-                  >
-                    登入
-                  </Button>
-                </Stack>
-                <Button
-                  w={'full'}
-                  variant={'outline'}
-                  leftIcon={<FcGoogle />}
-                >
-                  使用 Google 登入
-                </Button>
+                  記住帳戶
+                </Checkbox>
+                <Link color={'blue.400'} href="/forgot-password">
+                  忘記密碼?
+                </Link>
               </Stack>
-            </Flex>
+              <Button
+                colorScheme={'blue'}
+                variant={'solid'}
+                isLoading={loading}
+                onClick={handleLogin}
+              >
+                登入
+              </Button>
+            </Stack>
+            <Button
+              w={'full'}
+              variant={'outline'}
+              leftIcon={<FcGoogle />}
+            >
+              使用 Google 登入
+            </Button>
           </Stack>
-        </Container>
+        </Flex>
       </Flex>
     </ChakraProvider>
   );

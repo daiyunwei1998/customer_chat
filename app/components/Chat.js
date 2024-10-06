@@ -176,7 +176,46 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
       {/* Main Chat Area */}
       <Flex flex="1" direction="column" p={4} overflowY="auto">
         <VStack spacing={4} align="stretch">
-          {/* ... [Message Rendering Logic] */}
+        {messages.map((msg, idx) => {
+            const isOutgoing = msg.sender === userId || msg.sender === "AI";
+            return (
+              <Flex
+                key={idx}
+                justify={isOutgoing ? "flex-end" : "flex-start"}
+                align="flex-end"
+              >
+                {!isOutgoing && (
+                  <Avatar
+                    size="sm"
+                    src={`${imageHost}/tenant_logos/agent.png`}
+                    name={msg.sender_name || "Support"}
+                    mr={2}
+                  />
+                )}
+                <Box
+                  bg={isOutgoing ? "blue.100" : "gray.100"}
+                  p={3}
+                  borderRadius="md"
+                  maxW="70%"
+                >
+                  <ReactMarkdown components={markdownComponents}>
+                    {msg.content}
+                  </ReactMarkdown>
+                  <Text fontSize="xs" color="gray.500" textAlign="right">
+                    {formatTimestamp(msg.timestamp)}
+                  </Text>
+                </Box>
+                {isOutgoing && (
+                  <Avatar
+                    size="sm"
+                    src={`${imageHost}/tenant_logos/user.png`}
+                    name={userName}
+                    ml={2}
+                  />
+                )}
+              </Flex>
+            );
+          })}
           <div ref={messagesEndRef} />
         </VStack>
       </Flex>
