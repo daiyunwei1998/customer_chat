@@ -1,2 +1,6 @@
-export const chatServiceHost = "http://203.204.185.67:8080"; // process.env.NEXT_PUBLIC_CHAT_SERVICE_HOST || "http://localhost:8080";
-export const tenantServiceHost = "http://203.204.185.67:8000";
+export const chatServiceHost = "https://flashresponse.net/chat";
+export const tenantServiceHost = "https://flashresponse.net/tenant";
+export const aiServiceHost = "https://flashresponse.net/ai";
+export const host = "https://flashresponse.net";
+
+export const imageHost = "https://d5aepzwh87at2.cloudfront.net";

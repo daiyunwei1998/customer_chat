@@ -1,38 +1,94 @@
+// components/Chat.jsx
+
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import {
-  MainContainer,
-  ChatContainer,
-  MessageList,
-  Message,
-  MessageInput,
+  Box,
+  Flex,
+  Text,
+  Input,
+  Button,
+  Spinner,
   Avatar,
-  TypingIndicator
-} from "@chatscope/chat-ui-kit-react";
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { chatServiceHost, tenantServiceHost } from "@/app/config";
+  VStack,
+  useToast,
+  UnorderedList,
+  ListItem,
+} from "@chakra-ui/react";
+import ReactMarkdown from "react-markdown";
+import { chatServiceHost, imageHost } from "@/app/config";
+import styles from './Chat.module.css'; // Ensure this does not contain conflicting styles
 
-const Chat = () => {
+const Chat = ({ tenantId, userId, userName, jwt }) => {
+  // State Variables
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
-  const [tenantAlias, setTenantAlias] = useState(""); 
-  const [tenantId, setTenantId] = useState("");
-  const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const clientRef = useRef(null);
-  
+  const messagesEndRef = useRef(null);
+  const toast = useToast();
+
+  // Connect to WebSocket
+  const connectWebSocket = () => {
+    const socketUrl = `${chatServiceHost}/ws?user=${userId}`;
+    const socket = new SockJS(socketUrl);
+
+    const client = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        console.log("Connected to WebSocket");
+
+        client.subscribe("/user/queue/messages", onMessageReceived);
+
+        client.publish({
+          destination: "/app/chat.addUser",
+          body: JSON.stringify({
+            sender: userId,
+            type: "JOIN",
+            tenant_id: tenantId,
+            user_type: "customer",
+            sender_name: userName,
+            content: `${userName} joined the chat.`,
+          }),
+        });
+
+        setIsConnected(true);
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+        toast({
+          title: "WebSocket Error",
+          description: frame.headers["message"],
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      },
+      debug: (str) => {
+        console.log(str);
+      },
+    });
+
+    client.activate();
+    clientRef.current = client;
+  };
+
+  // Handle Incoming Messages
   const onMessageReceived = (payload) => {
     const message = JSON.parse(payload.body);
     console.log("Received message:", message);
     if (message.type === "CHAT") {
       setMessages((prevMessages) => [...prevMessages, message]);
     }
-    setIsReplying(message.type == "ACKNOWLEDGEMENT") // set back to false if type is 'CHAT'
+    setIsReplying(message.type === "ACKNOWLEDGEMENT");
   };
 
+  // Send Message Function
   const sendMessage = () => {
     if (messageInput.trim() !== "" && clientRef.current) {
       const chatMessage = {
@@ -40,9 +96,10 @@ const Chat = () => {
         content: messageInput,
         type: "CHAT",
         tenant_id: tenantId,
-        receiver: null, // TODO check paired
+        receiver: null,
         user_type: "customer",
         timestamp: new Date().toISOString(),
+        sender_name: userName,
       };
 
       setMessages((prevMessages) => [...prevMessages, chatMessage]);
@@ -56,147 +113,151 @@ const Chat = () => {
     }
   };
 
-  const fetchTenantId = async (alias) => {
-    try {
-      const response = await fetch(`${tenantServiceHost}/api/v1/tenants/find?alias=${alias}`);
-      const data = await response.json();
-      if (data && data.data) {
-        setTenantId(data.data.tenant_id);
-      } else {
-        alert("Tenant not found");
-      }
-    } catch (error) {
-      console.error("Failed to fetch tenant ID:", error);
-      alert("Failed to fetch tenant ID. Please try again.");
-    }
-  };
-
-  const connect = () => {
-    const socketUrl = chatServiceHost + `/ws?user=${userId}`;
-    const socket = new SockJS(socketUrl);
-
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log("Connected");
-
-        client.subscribe("/user/queue/messages", onMessageReceived);
-
-        client.publish({
-          destination: "/app/chat.addUser",
-          body: JSON.stringify({
-            sender: userId,
-            type: "JOIN",
-            tenant_id: tenantId,
-            user_type: "customer",
-          }),
-        });
-
-        setIsConnected(true);
-      },
-      onStompError: (frame) => {
-        console.error("Broker reported error: " + frame.headers["message"]);
-        console.error("Additional details: " + frame.body);
-      },
-      debug: (str) => {
-        console.log(str);
-      },
-    });
-
-    client.activate();
-    clientRef.current = client;
-  };
-
-  const handleConnectClick = async () => {
-    if (!tenantAlias || !userId) {
-      alert("Please enter both Tenant Alias and User ID");
-      return;
-    }
-
-    await fetchTenantId(tenantAlias); // Fetch tenant ID by alias before connecting
-    if (tenantId) {
-      connect();
-    }
-  };
-
+  // Format Timestamp
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  // Auto-scroll to the latest message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  // Initialize WebSocket Connection
+  useEffect(() => {
+    if (tenantId && userId) {
+      connectWebSocket();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.deactivate();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, userId]);
+
+  // Handle Copy Event to Strip HTML
+  useEffect(() => {
+    const handleCopy = (e) => {
+      const text_only = document.getSelection().toString();
+
+      if (e.clipboardData) {
+        e.clipboardData.setData("text/plain", text_only);
+        e.clipboardData.setData("text/html", text_only);
+        e.preventDefault();
+      } else if (window.clipboardData) {
+        window.clipboardData.setData("text", text_only);
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("copy", handleCopy);
+
+    return () => {
+      document.removeEventListener("copy", handleCopy);
+    };
+  }, []);
+
+  // Define custom components for ReactMarkdown to style markdown content
+  const markdownComponents = {
+    ul: ({ node, ...props }) => (
+      <UnorderedList pl={4} styleType="disc" {...props} />
+    ),
+    li: ({ node, ...props }) => <ListItem pl={2} {...props} />,
   };
 
   return (
-    <div style={{ height: "500px", width: "100%" }}>
-      <MainContainer>
-        {!isConnected ? (
-          <div style={{ padding: "20px" }}>
-            <h2>Customer Chat</h2>
-            <input
-              type="text"
-              placeholder="Enter Tenant Alias"
-              value={tenantAlias}
-              onChange={(e) => setTenantAlias(e.target.value)}
-              style={{
-                marginRight: "10px",
-                marginBottom: "10px",
-                padding: "5px",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Enter User ID"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              style={{
-                marginRight: "10px",
-                marginBottom: "10px",
-                padding: "5px",
-              }}
-            />
-            <button
-              onClick={handleConnectClick}
-              style={{ padding: "5px 10px" }}
-            >
-              Connect
-            </button>
-          </div>
-        ) : (
-          <ChatContainer>
-            <MessageList>
-            {isReplying ? <TypingIndicator content="AI agent is responding" /> : null}
-              {messages.map((msg, idx) => (
-                <Message
-                  key={idx}
-                  model={{
-                    message: msg.content,
-                    sentTime: formatTimestamp(msg.timestamp) || "just now",
-                    sender: msg.sender,
-                    direction: msg.sender === userId ? "outgoing" : "incoming",
-                    position: "normal",
-                  }}
-                >
-                  <Message.Header sender={msg.sender} />
-                  <Message.Footer>
-                    <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
-                  </Message.Footer>
+    <Flex direction="column" flex="1" width="100%" bg="gray.50"> {/* Set Chat background color */}
+      {/* Main Chat Area */}
+      <Flex flex="1" direction="column" p={4} overflowY="auto">
+        <VStack spacing={4} align="stretch">
+        {messages.map((msg, idx) => {
+            const isOutgoing = msg.sender === userId || msg.sender === "AI";
+            return (
+              <Flex
+                key={idx}
+                justify={isOutgoing ? "flex-end" : "flex-start"}
+                align="flex-end"
+              >
+                {!isOutgoing && (
                   <Avatar
-                    src={msg.sender === userId ? "/user.png" : "/agent.png"}
-                    name={msg.sender}
+                    size="sm"
+                    src={`${imageHost}/tenant_logos/agent.png`}
+                    name={msg.sender_name || "Support"}
+                    mr={2}
                   />
-                </Message>
-              ))}
-            </MessageList>
-            <MessageInput
-              placeholder="Type your message here"
-              value={messageInput}
-              onChange={(val) => setMessageInput(val)}
-              onSend={sendMessage}
-              attachButton={false}
-            />
-          </ChatContainer>
-        )}
-      </MainContainer>
-    </div>
+                )}
+                <Box
+                  bg={isOutgoing ? "blue.100" : "gray.100"}
+                  p={3}
+                  borderRadius="md"
+                  maxW="70%"
+                >
+                  <ReactMarkdown components={markdownComponents}>
+                    {msg.content}
+                  </ReactMarkdown>
+                  <Text fontSize="xs" color="gray.500" textAlign="right">
+                    {formatTimestamp(msg.timestamp)}
+                  </Text>
+                </Box>
+                {isOutgoing && (
+                  <Avatar
+                    size="sm"
+                    src={`${imageHost}/tenant_logos/user.png`}
+                    name={userName}
+                    ml={2}
+                  />
+                )}
+              </Flex>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </VStack>
+      </Flex>
+
+      {/* Typing Indicator */}
+      {isReplying && (
+        <Flex alignItems="center" p={2} bg="gray.100">
+          <Spinner size="sm" mr={2} />
+          <Text>Support is typing...</Text>
+        </Flex>
+      )}
+
+      {/* Message Input */}
+      <Box
+        p={4}
+        bg="white" // Different background for input area
+        borderTop="1px solid"
+        borderColor="gray.200"
+        display="flex"
+        alignItems="center"
+      >
+        <Input
+          placeholder="Type your message here..."
+          value={messageInput}
+          onChange={(e) => setMessageInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+        />
+        <Button
+          colorScheme="blue"
+          ml={2}
+          onClick={sendMessage}
+          isDisabled={!messageInput.trim()}
+        >
+          Send
+        </Button>
+      </Box>
+    </Flex>
   );
 };
 
