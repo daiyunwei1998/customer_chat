@@ -97,7 +97,8 @@
               type: "JOIN",
               tenant_id: tenantId,
               user_type: "customer",
-              sender_name: userName
+              sender_name: userName,
+              content:`${userName} joined.`
             }),
           });
 
