@@ -172,9 +172,9 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
   };
 
   return (
-    <Flex direction="column" flex="1" width="100%" bg="gray.50"> {/* Set Chat background color */}
+    <Flex direction="column" flex="1" width="100%" height = "calc(100vh - 72px)" bg="gray.50"> {/* Set Chat background color */}
       {/* Main Chat Area */}
-      <Flex flex="1" direction="column" p={4} overflowY="auto">
+      <Box flex="1" direction="column" p={4} overflowY="scroll">
         <VStack spacing={4} align="stretch">
         {messages.map((msg, idx) => {
             const isOutgoing = msg.sender === userId || msg.sender === "AI";
@@ -218,7 +218,7 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
           })}
           <div ref={messagesEndRef} />
         </VStack>
-      </Flex>
+      </Box>
 
       {/* Typing Indicator */}
       {isReplying && (
