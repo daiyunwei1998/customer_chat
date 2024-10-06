@@ -13,6 +13,7 @@
     "@chakra-ui/react": "^2.9.3",
     "@chatscope/chat-ui-kit-react": "^2.0.3",
     "@stomp/stompjs": "^7.0.0",
+    "axios": "^1.7.7",
     "lucide-react": "^0.446.0",
     "marked": "^14.1.2",
     "next": "14.2.10",

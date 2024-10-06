@@ -1,7 +1,6 @@
-import Image from "next/image";
-import styles from "./page.module.css";
 import Chat from "./components/Chat";
 import { cookies } from 'next/headers'
+import { Flex } from '@chakra-ui/react';
 
 export default function Home() {
   const tenantId = cookies().get('tenantId')?.value
@@ -10,10 +9,8 @@ export default function Home() {
   const userName = cookies().get('userName')?.value
   
   return (
-    <div className={styles.page} style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
-      <main className={styles.main} style={{ flex: 1, width: '100%', overflow: 'hidden'  }}>
-        <Chat tenantId= {tenantId} userId={userId} userName = {userName} jwt ={jwt} />
-      </main>
-    </div>
+    <Flex direction="column" height="100%" width="100%">
+      <Chat tenantId={tenantId} userId={userId} userName={userName} jwt={jwt} />
+    </Flex>
   );
 }

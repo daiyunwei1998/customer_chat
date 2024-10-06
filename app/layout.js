@@ -2,7 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { tenantServiceHost, imageHost } from '@/app/config';
 import { headers, cookies } from 'next/headers';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Flex } from '@chakra-ui/react';
 import Navbar from "./components/NavBar";
 
 const geistSans = localFont({
@@ -90,16 +90,20 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href={tenantInfo.logo} />
-        <title>{`${tenantInfo.name} | 閃應客服平台`}</title>
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ChakraProvider>
+    <head>
+      <link rel="icon" href={tenantInfo.logo} />
+      <title>{`${tenantInfo.name} | 閃應客服平台`}</title>
+    </head>
+    <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <ChakraProvider>
+        <Flex direction="column" height="100vh">
           <Navbar logo={tenantInfo.logo} name={tenantInfo.name} userId={userId} initialJwt={jwt} />
-          {children}
-        </ChakraProvider>
-      </body>
-    </html>
+          <Flex flex="1" overflow="hidden">
+            {children}
+          </Flex>
+        </Flex>
+      </ChakraProvider>
+    </body>
+  </html>
   );
 }
