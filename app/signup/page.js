@@ -174,7 +174,7 @@ const SignUp = () => {
 
       if (!userResponse.ok) {
         const errorData = await userResponse.json();
-        throw new Error(errorData.message || "用戶註冊失敗");
+        throw new Error(errorData.error || "用戶註冊失敗");
       }
 
       toast({
