@@ -1,26 +1,44 @@
 'use client';
 import React, { useState } from 'react';
-import { Box, Flex, Button, Image, Text, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Button,
+  Image,
+  Text,
+  useColorModeValue,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { chatServiceHost } from '@/app/config';
 
 const Navbar = ({ name, logo, userId, tenantId, initialJwt }) => {
   const [jwt, setJwt] = useState(initialJwt);
   const router = useRouter();
+  
+  // Chakra UI color modes
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const fontSize = useBreakpointValue({ base: 'lg', md: 'xl', lg: '2xl' });
+  
+  // Responsive font and logo sizes
+  const fontSize = useBreakpointValue({ base: 'md', md: 'xl', lg: '2xl' });
   const logoSize = useBreakpointValue({ base: '30px', md: '35px', lg: '40px' });
+  
+  // Fixed width for Logout button container to reserve space
+  const logoutButtonWidth = useBreakpointValue({ base: '60px', md: '80px' });
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${chatServiceHost}/api/v1/tenants/${tenantId}/users/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${chatServiceHost}/api/v1/tenants/${tenantId}/users/logout`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      );
 
       if (response.ok) {
         setJwt(null); // Update the jwt state
@@ -34,30 +52,62 @@ const Navbar = ({ name, logo, userId, tenantId, initialJwt }) => {
   };
 
   return (
-    <Box bg={bgColor} borderBottom={`1px solid ${borderColor}`} height="72px">
-      <Flex justify="space-between" align="center" height="100%" px={4}>
-        <Box flex={1} /> {/* Spacer */}
-        <Flex align="center" justify="center" flex={1} maxWidth="50%">
-          <Image src={logo} alt="Logo" boxSize={logoSize} mr={2} objectFit="contain" />
-          <Text
-            fontSize={fontSize}
-            fontWeight="bold"
-            noOfLines={1}
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
-            overflow="hidden"
-          >
-            {name}
-          </Text>
-        </Flex>
-        <Box flex={1} textAlign="right">
-          {jwt && (
-            <Button onClick={handleLogout} colorScheme="red" size="sm">
-              Logout
-            </Button>
-          )}
-        </Box>
+    <Box
+      bg={bgColor}
+      borderBottom={`1px solid ${borderColor}`}
+      height="72px"
+      position="relative"
+      width="100%"
+    >
+      {/* Central Content: Logo and Name */}
+      <Flex
+        align="center"
+        justify="center"
+        height="100%"
+        px={4}
+        maxW="calc(100% - 120px)" // Adjust based on Logout button width
+        mx="auto"
+        overflow="hidden"
+      >
+        <Image
+          src={logo}
+          alt="Logo"
+          boxSize={logoSize}
+          mr={2}
+          objectFit="contain"
+        />
+        <Text
+          fontSize={fontSize}
+          fontWeight="bold"
+          noOfLines={1}
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+          textAlign="center"
+        >
+          {name}
+        </Text>
       </Flex>
+
+      {/* Logout Button */}
+      {jwt && (
+        <Box
+          position="absolute"
+          right="20px"
+          top="50%"
+          transform="translateY(-50%)"
+          width={logoutButtonWidth}
+        >
+          <Button
+            onClick={handleLogout}
+            colorScheme="red"
+            size="sm"
+            width="100%"
+          >
+            Logout
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

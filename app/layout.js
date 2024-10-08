@@ -98,7 +98,7 @@ export default async function RootLayout({ children }) {
       <ChakraProvider>
         <Flex direction="column" height="100vh">
           <Navbar logo={tenantInfo.logo} name={tenantInfo.name} userId={userId} initialJwt={jwt} />
-          <Flex flex="1" overflow="hidden">
+          <Flex flex="1" overflow="auto">
             {children}
           </Flex>
         </Flex>
