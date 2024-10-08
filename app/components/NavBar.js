@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Flex,
@@ -12,10 +12,18 @@ import {
 import { useRouter } from 'next/navigation';
 import { chatServiceHost } from '@/app/config';
 
+
 const Navbar = ({ name, logo, userId, tenantId, initialJwt }) => {
   const [jwt, setJwt] = useState(initialJwt);
-  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState(initialJwt)
+  const router = useRouter(); 
   
+
+  useEffect(() => {
+    setLoggedIn(initialJwt);
+  }, [initialJwt]);
+
+
   // Chakra UI color modes
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -42,6 +50,7 @@ const Navbar = ({ name, logo, userId, tenantId, initialJwt }) => {
 
       if (response.ok) {
         setJwt(null); // Update the jwt state
+        setLoggedIn(false);
         router.push('/login');
       } else {
         console.error('Logout failed', response.statusText);
@@ -90,7 +99,7 @@ const Navbar = ({ name, logo, userId, tenantId, initialJwt }) => {
       </Flex>
 
       {/* Logout Button */}
-      {jwt && (
+      {loggedIn && (
         <Box
           position="absolute"
           right="20px"
