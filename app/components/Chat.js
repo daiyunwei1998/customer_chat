@@ -20,6 +20,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import { chatServiceHost, imageHost } from "@/app/config";
 import styles from './Chat.module.css'; // Ensure this does not contain conflicting styles
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Chat = ({ tenantId, userId, userName, jwt }) => {
   // State Variables
@@ -170,6 +172,25 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
       <UnorderedList pl={4} styleType="disc" {...props} />
     ),
     li: ({ node, ...props }) => <ListItem pl={2} {...props} />,
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <Box overflowX="auto" borderRadius="md" my={2}>
+          <SyntaxHighlighter
+            style={solarizedlight}
+            language={match[1]}
+            PreTag="div"
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        </Box>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
   };
 
   return (
