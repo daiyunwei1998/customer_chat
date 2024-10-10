@@ -18,10 +18,9 @@ import {
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FcGoogle } from 'react-icons/fc';
 import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
 import { ChakraProvider } from '@chakra-ui/react';
-import { GoogleLogin } from '@react-oauth/google';
+import {GoogleLoginButton} from '@/app/components/GoogleLoginButton'
 
 export default function LoginPage() {
   const [alias, setAlias] = useState('');
@@ -274,7 +273,7 @@ export default function LoginPage() {
                 登入
               </Button>
             </Stack>
-            <GoogleLogin></GoogleLogin>
+            <GoogleLoginButton tenant = {alias}></GoogleLoginButton>
           </Stack>
         </Flex>
       </Flex>

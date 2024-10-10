@@ -1,16 +1,22 @@
-"use client"
+"use client";
+
 import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
 const AuthPage = () => {
   const router = useRouter();
-  const { tenant } = router.query;
+  const searchParams = useSearchParams();
+  const tenant = searchParams.get('tenant');
 
   useEffect(() => {
     if (tenant) {
       const csrfToken = uuidv4(); // Generate a unique CSRF token
+
       // Store CSRF token in a secure, HTTP-only cookie
+      // Note: In client-side code, you cannot set HTTP-only cookies. 
+      // HTTP-only cookies must be set from the server.
+      // Instead, consider using secure cookies without HTTP-only or use server-side methods.
       document.cookie = `oauth_csrf_token=${csrfToken}; path=/; secure; SameSite=Lax`;
 
       // Encode the state parameter with tenant and CSRF token

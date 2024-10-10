@@ -1,11 +1,13 @@
+"use client"
 import { Button } from '@chakra-ui/react';
 import { FcGoogle } from 'react-icons/fc';
 
-const GoogleLogin = () => {
-  const initiateGoogleOAuth = () => {
-    const tenant = window.location.hostname; // e.g., tenant1.flashresponse.net
+export const GoogleLoginButton = ({tenant}) => {
 
+  const initiateGoogleOAuth = () => {
+    console.log("Redirecting to Google auth page for " + tenant)
     // Redirect to the central OAuth handler with tenant information
+
     window.location.href = `https://auth.flashresponse.net/auth?tenant=${tenant}`;
   };
 
@@ -20,5 +22,3 @@ const GoogleLogin = () => {
     </Button>
   );
 };
-
-export default GoogleLogin;

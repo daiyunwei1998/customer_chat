@@ -96,7 +96,7 @@ export default async function RootLayout({ children }) {
       <title>{`${tenantInfo.name} | 閃應客服平台`}</title>
     </head>
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID}>
       <ChakraProvider>
         <Flex direction="column" height="100vh">
           <Navbar logo={tenantInfo.logo} name={tenantInfo.name} userId={userId} initialJwt={jwt} />

@@ -7,7 +7,7 @@ const PUBLIC_FILE = /\.(.*)$/;
 const PUBLIC_PATHS = [
   '/login',
   '/signup',
-  '/api/auth', // Add any other public API routes here
+  '/auth', // Add any other public API routes here
 ];
 
 // Function to determine if the path is public
