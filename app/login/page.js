@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { chatServiceHost, tenantServiceHost, imageHost } from '@/app/config';
 import { ChakraProvider } from '@chakra-ui/react';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const [alias, setAlias] = useState('');
@@ -273,13 +274,7 @@ export default function LoginPage() {
                 登入
               </Button>
             </Stack>
-            <Button
-              w={'full'}
-              variant={'outline'}
-              leftIcon={<FcGoogle />}
-            >
-              使用 Google 登入
-            </Button>
+            <GoogleLogin></GoogleLogin>
           </Stack>
         </Flex>
       </Flex>
