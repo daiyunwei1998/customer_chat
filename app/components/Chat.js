@@ -20,6 +20,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import { chatServiceHost, imageHost } from "@/app/config";
 import styles from './Chat.module.css'; // Ensure this does not contain conflicting styles
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Chat = ({ tenantId, userId, userName, jwt }) => {
   // State Variables
@@ -27,6 +29,7 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
   const [messageInput, setMessageInput] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
+  const [isComposing, setIsComposing] = useState(false); // New state for composition
   const clientRef = useRef(null);
   const messagesEndRef = useRef(null);
   const toast = useToast();
@@ -169,14 +172,33 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
       <UnorderedList pl={4} styleType="disc" {...props} />
     ),
     li: ({ node, ...props }) => <ListItem pl={2} {...props} />,
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <Box overflowX="auto" borderRadius="md" my={2}>
+          <SyntaxHighlighter
+            style={solarizedlight}
+            language={match[1]}
+            PreTag="div"
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        </Box>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
   };
 
   return (
-    <Flex direction="column" flex="1" width="100%" height = "calc(100vh - 72px)" bg="gray.50"> {/* Set Chat background color */}
+    <Flex direction="column" flex="1" width="100%" height="calc(100vh - 72px)" bg="gray.50"> {/* Set Chat background color */}
       {/* Main Chat Area */}
       <Box flex="1" direction="column" p={4} overflowY="scroll">
         <VStack spacing={4} align="stretch">
-        {messages.map((msg, idx) => {
+          {messages.map((msg, idx) => {
             const isOutgoing = msg.sender === userId || msg.sender === "AI";
             return (
               <Flex
@@ -242,11 +264,13 @@ const Chat = ({ tenantId, userId, userName, jwt }) => {
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (e.key === "Enter" && !e.shiftKey && !isComposing) {
               e.preventDefault();
               sendMessage();
             }
           }}
+          onCompositionStart={() => setIsComposing(true)}
+          onCompositionEnd={() => setIsComposing(false)}
         />
         <Button
           colorScheme="blue"
